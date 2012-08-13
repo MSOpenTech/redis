@@ -286,12 +286,14 @@ int redisCheckSocketError(redisContext *c, int fd) {
 
 #ifdef _WIN32
 int redisContextSetTimeout(redisContext *c, struct timeval tv) {
-    if (setsockopt(c->fd,SOL_SOCKET,SO_RCVTIMEO,(const char *)&tv,sizeof(tv)) == SOCKET_ERROR ) {
+    /* Windows requires a DWORD for timeout in msec */
+    const DWORD dw = (tv.tv_sec*1000)+(tv.tv_usec/1000);
+    if (setsockopt(c->fd,SOL_SOCKET,SO_RCVTIMEO,&dw,sizeof(dw)) == SOCKET_ERROR ) {
         errno = WSAGetLastError();
         __redisSetErrorFromErrno(c,REDIS_ERR_IO,"setsockopt(SO_RCVTIMEO)");
         return REDIS_ERR;
     }
-    if (setsockopt(c->fd,SOL_SOCKET,SO_SNDTIMEO,(const char *)&tv,sizeof(tv)) == SOCKET_ERROR ) {
+    if (setsockopt(c->fd,SOL_SOCKET,SO_SNDTIMEO,&dw,sizeof(dw)) == SOCKET_ERROR ) {
         errno = WSAGetLastError();
         __redisSetErrorFromErrno(c,REDIS_ERR_IO,"setsockopt(SO_SNDTIMEO)");
         return REDIS_ERR;
