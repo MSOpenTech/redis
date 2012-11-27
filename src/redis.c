@@ -790,7 +790,7 @@ void createSharedObjects(void) {
 #pragma warning(disable: 4723)
 #endif
 void initServerConfig() {
-    server.arch_bits = (sizeof(long) == 8) ? 64 : 32;
+    server.arch_bits = (sizeof(void*) == 8) ? 64 : 32;
     server.port = REDIS_SERVERPORT;
     server.bindaddr = NULL;
     server.unixsocket = NULL;
