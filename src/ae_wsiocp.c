@@ -288,7 +288,7 @@ static int aeApiPoll(aeEventLoop *eventLoop, struct timeval *tvp) {
     int numevents = 0;
     ULONG numComplete = 0;
     int rc;
-    int mswait = (tvp->tv_sec * 1000) + (tvp->tv_usec / 1000);
+    int mswait = tvp ? (tvp->tv_sec * 1000) + (tvp->tv_usec / 1000) : INFINITE;
 
     if (pGetQueuedCompletionStatusEx != NULL) {
         /* first get an array of completion notifications */
