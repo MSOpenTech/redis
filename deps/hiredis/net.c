@@ -123,7 +123,6 @@ static int redisCreateSocket(redisContext *c, int type) {
     }
     return s;
 }
-}
 #endif
 
 
