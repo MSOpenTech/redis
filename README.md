@@ -33,7 +33,7 @@ You can use the free Express Edition available at http://www.microsoft.com/visua
     - redis-check-dump.exe
     - redis-check-aof.exe
 
-For your convenience all binaries are be available in the msvs/bin/release|debug directories.
+For your convenience all binaries are available in the msvs/bin/release|debug directories.
 
 ## RedisWatcher
 So far the RedisWatcher is not carried over to 2.6. However this should not be affected by the Redis version, and the code in the 2.4 branch should work with the Redis 2.6 binaries.
