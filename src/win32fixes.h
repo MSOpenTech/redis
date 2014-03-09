@@ -278,7 +278,7 @@ int w32initWinSock(void);
 /* int inet_aton(const char *cp_arg, struct in_addr *addr) */
 
 /* redis-check-dump  */
-void *mmap(void *start, size_t length, int prot, int flags, int fd, off offset);
+void *mmap(void *start, size_t length, int prot, int flags, int fd, off_t offset);
 int munmap(void *start, size_t length);
 
 int fork(void);
