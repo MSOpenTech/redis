@@ -36,7 +36,9 @@
 
 #ifdef _WIN32
   #define inline __inline
-  #define va_copy(d,s) d = (s)
+  #if defined(_MSC_VER) && (_MSC_VER < 1800)
+    #define va_copy(d,s) d = (s)
+  #endif
 #endif
 
 typedef char *sds;
