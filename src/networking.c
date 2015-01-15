@@ -1200,6 +1200,11 @@ int processMultibulkBuffer(redisClient *c) {
                  * going to contain. */
                 if (qblen < (size_t)ll+2)
                     c->querybuf = sdsMakeRoomFor(c->querybuf,ll+2-qblen);
+
+				if (c->querybuf == NULL) {
+					c->querybuf = sdsempty();
+					return REDIS_ERR;
+				}
             }
             c->bulklen = (long)ll;
         }
@@ -1222,6 +1227,10 @@ int processMultibulkBuffer(redisClient *c) {
                 /* Assume that if we saw a fat argument we'll see another one
                  * likely... */
                 c->querybuf = sdsMakeRoomFor(c->querybuf,c->bulklen+2);
+				if (c->querybuf == NULL) {
+					c->querybuf = sdsempty();
+					return REDIS_ERR;
+				}
                 pos = 0;
             } else {
                 c->argv[c->argc++] =
@@ -1308,6 +1317,13 @@ void readQueryFromClient(aeEventLoop *el, int fd, void *privdata, int mask) {
     qblen = sdslen(c->querybuf);
     if (c->querybuf_peak < qblen) c->querybuf_peak = qblen;
     c->querybuf = sdsMakeRoomFor(c->querybuf, readlen);
+
+	if (c->querybuf == NULL) {
+		redisLog(REDIS_VERBOSE, "Error allocating");
+		freeClient(c);
+		return;
+	}
+
     nread = read(fd, c->querybuf+qblen, readlen);
     if (nread == -1) {
         if (errno == EAGAIN) {
