@@ -1170,6 +1170,12 @@ LPVOID AllocHeapBlock(size_t size, BOOL allocateHigh) {
     }
     int contiguousBlocksToAllocate = (int)(size / g_pQForkControl->heapBlockSize);
 
+	if (contiguousBlocksToAllocate > g_pQForkControl->availableBlocksInHeap)
+	{
+		errno = ENOMEM;
+		return retPtr;
+	}
+
     size_t mapped = 0;
     int startIndex = allocateHigh ? g_pQForkControl->availableBlocksInHeap - 1 : 0;
     int endIndex = allocateHigh ? -1 : g_pQForkControl->availableBlocksInHeap;
