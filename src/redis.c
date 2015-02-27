@@ -1118,11 +1118,10 @@ int serverCron(struct aeEventLoop *eventLoop, long long id, void *clientData) {
 		if (GetForkOperationStatus() == osCOMPLETE || GetForkOperationStatus() == osFAILED) {
 			int exitCode;
 			int bySignal;
-			OperationType type = ((server.rdb_child_pid != -1) ? otRDB : otAOF);
 			bySignal = (int)(GetForkOperationStatus() == osFAILED);
 			redisLog(REDIS_WARNING, (bySignal ? "fork operation failed" : "fork operation complete"));
 			EndForkOperation(&exitCode);
-			if (type == otRDB) {
+			if (server.rdb_child_pid != -1) {
 				backgroundSaveDoneHandler(exitCode, bySignal);
 			} else {
 				backgroundRewriteDoneHandler(exitCode, bySignal);
@@ -3464,8 +3463,8 @@ void redisOutOfMemoryHandler(size_t allocation_size) {
 #else
     redisLog(REDIS_WARNING,"Out Of Memory allocating %zu bytes!",
         allocation_size);
-    redisPanic("Redis aborting for OUT OF MEMORY");
 #endif
+    redisPanic("Redis aborting for OUT OF MEMORY");
 }
 
 void redisSetProcTitle(char *title) {

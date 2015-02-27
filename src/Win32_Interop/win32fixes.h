@@ -89,8 +89,6 @@ typedef unsigned __int32 u_int32_t;
 #undef usleep
 #define usleep(x) (x == 1) ? Sleep(0) : Sleep((int)((x)/1000))
 
-#define pipe(fds) _pipe(fds, 8192, _O_BINARY|_O_NOINHERIT)
-
 /* Processes */
 #define waitpid(pid,statusp,options) _cwait (statusp, pid, WAIT_CHILD)
 
@@ -303,6 +301,7 @@ int aeWinSocketSend(int fd, char *buf, int len,
                     void *eventLoop, void *client, void *data, void *proc);
 int aeWinListen(int rfd, int backlog);
 int aeWinAccept(int fd, struct sockaddr *sa, socklen_t *len);
+int aeWinGetPeerName(int fd, struct sockaddr *addr, socklen_t * addrlen);
 int aeWinSocketConnect(int fd, const SOCKADDR_STORAGE *ss);
 int aeWinSocketConnectBind(int fd, const SOCKADDR_STORAGE *ss, const char* source_addr);
 
