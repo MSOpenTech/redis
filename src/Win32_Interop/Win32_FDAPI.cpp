@@ -32,7 +32,7 @@
 #include "Win32_ANSI.h"
 #include "win32_util.h"
 #include <string>
-#include "..\redisLog.h"
+#include "Win32_RedisLog.h"
 using namespace std;
 
 #define CATCH_AND_REPORT()  catch(const std::exception &){::redisLog(REDIS_WARNING, "FDAPI: std exception");}catch(...){::redisLog(REDIS_WARNING, "FDAPI: other exception");}
@@ -734,7 +734,7 @@ int redis_listen_impl(int sockfd, int backlog) {
     return -1;
 }
 
-int redis_ftruncate_impl(int fd, long long length) {
+int redis_ftruncate_impl(int fd, PORT_LONGLONG length) {
     try
     {
         LARGE_INTEGER l, o;

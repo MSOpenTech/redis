@@ -21,7 +21,6 @@
  */
 
 #include "win32_types.h"
-
 #include "Win32_FDAPI.h"
 
 #include <Windows.h>
@@ -42,7 +41,9 @@
 #include "Win32_SmartHandle.h"
 #include "Win32_Service.h"
 #include "Win32_CommandLine.h"
-#include "..\redisLog.h"
+#include "Win32_RedisLog.h"
+#include "Win32_StackTrace.h"
+#include "Win32_ThreadControl.h"
 
 #include <vector>
 #include <map>
@@ -52,13 +53,14 @@
 #include <exception>
 #include <algorithm>
 #include <memory>
+
 using namespace std;
 
 #ifndef PAGE_REVERT_TO_FILE_MAP
 #define PAGE_REVERT_TO_FILE_MAP 0x80000000  // From Win8.1 SDK
 #endif
 
-const long long cSentinelHeapSize = 30 * 1024 * 1024;
+const int64_t cSentinelHeapSize = 30 * 1024 * 1024;
 extern "C" int checkForSentinelMode(int argc, char **argv);
 extern "C" void InitTimeFunctions();
 
@@ -71,7 +73,7 @@ extern "C"
   size_t(*g_msize)(void*) = nullptr;
   
   // forward def from util.h. 
-  long long memtoll(const char *p, int *err);
+  PORT_LONGLONG memtoll(const char *p, int *err);
 }
 
 //#define DEBUG_WITH_PROCMON
@@ -613,12 +615,12 @@ BOOL QForkMasterInit( __int64 maxheapBytes ) {
 }
 
 LONG CALLBACK VectoredHeapMapper(PEXCEPTION_POINTERS info) {
-    if( info->ExceptionRecord->ExceptionCode == STATUS_ACCESS_VIOLATION && 
+    if (info->ExceptionRecord->ExceptionCode == STATUS_ACCESS_VIOLATION && 
         info->ExceptionRecord->NumberParameters == 2) {
         intptr_t failingMemoryAddress = info->ExceptionRecord->ExceptionInformation[1];
         intptr_t heapStart = (intptr_t)g_pQForkControl->heapStart;
         intptr_t heapEnd = heapStart + ((SIZE_T)g_pQForkControl->availableBlocksInHeap * g_pQForkControl->heapBlockSize);
-        if( failingMemoryAddress >= heapStart && failingMemoryAddress <= heapEnd )
+        if (failingMemoryAddress >= heapStart && failingMemoryAddress < heapEnd)
         {
             intptr_t startOfMapping = failingMemoryAddress - failingMemoryAddress % g_systemAllocationGranularity;
             intptr_t mmfOffset = startOfMapping - heapStart;
@@ -634,6 +636,7 @@ LONG CALLBACK VectoredHeapMapper(PEXCEPTION_POINTERS info) {
                 LODWORD(mmfOffset),
                 bytesToMap,
                 (LPVOID)startOfMapping);
+
             if(pMapped != NULL)
             {
                 return EXCEPTION_CONTINUE_EXECUTION;
@@ -641,15 +644,15 @@ LONG CALLBACK VectoredHeapMapper(PEXCEPTION_POINTERS info) {
             else
             {
                 DWORD err = GetLastError();
-                ::redisLog(REDIS_WARNING, "\nF(0x%p)", startOfMapping);
-                ::redisLog(REDIS_WARNING, "\t MapViewOfFileEx failed with error 0x%08X. \n", err);
+                ::redisLog(REDIS_WARNING, "MapViewOfFileEx failed with error 0x%08X.\n", err);
+                ::redisLog(REDIS_WARNING, "\t startOfMapping 0x%p", startOfMapping);
                 ::redisLog(REDIS_WARNING, "\t heapStart 0x%p\n", heapStart);
                 ::redisLog(REDIS_WARNING, "\t heapEnd 0x%p\n", heapEnd);
                 ::redisLog(REDIS_WARNING, "\t failing access location 0x%p\n", failingMemoryAddress);
-                ::redisLog(REDIS_WARNING, "\t offset into mmf to start mapping 0x%016X\n", mmfOffset);
-                ::redisLog(REDIS_WARNING, "\t start of new mapping 0x%p \n", startOfMapping);
-                ::redisLog(REDIS_WARNING, "\t bytes to map 0x%08x \n", bytesToMap);
-                ::redisLog(REDIS_WARNING, "\t continuing exception handler search \n");
+                ::redisLog(REDIS_WARNING, "\t offset into mmf to start mapping 0x%p\n", mmfOffset);
+                ::redisLog(REDIS_WARNING, "\t start of new mapping 0x%p\n", startOfMapping);
+                ::redisLog(REDIS_WARNING, "\t bytes to map 0x%p\n", bytesToMap);
+                ::redisLog(REDIS_WARNING, "\t continuing exception handler search\n");
             }
         }
     }
@@ -1116,7 +1119,7 @@ void RejoinCOWPages(HANDLE mmHandle, byte* mmStart, size_t mmSize) {
             throw std::system_error(
                 GetLastError(),
                 system_category(),
-                "RejoinCOWPages: MapViewOfFileEx failed. Please upgrade your OS to Win8 or newer.");
+                "RejoinCOWPages: MapViewOfFileEx failed.");
         }
     }
 }
@@ -1318,6 +1321,8 @@ extern "C"
             InitTimeFunctions();
             ParseCommandLineArguments(argc, argv);
             SetupLogging();
+            StackTraceInit();
+            InitThreadControl();
         } catch (system_error syserr) {
             exit(-1);
         } catch (runtime_error runerr) {
