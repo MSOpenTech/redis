@@ -331,7 +331,7 @@ int rdbSaveStringObject(rio *rdb, robj *obj) {
     /* Avoid to decode the object, then encode it again, if the
      * object is already integer encoded. */
     if (obj->encoding == REDIS_ENCODING_INT) {
-        return rdbSaveLongLongAsStringObject(rdb,(long)obj->ptr);
+        return rdbSaveLongLongAsStringObject(rdb,(long long)obj->ptr);
     } else {
         redisAssertWithInfo(NULL,obj,obj->encoding == REDIS_ENCODING_RAW);
         return rdbSaveRawString(rdb,obj->ptr,sdslen(obj->ptr));
@@ -423,7 +423,7 @@ int rdbLoadDoubleValue(rio *rdb, double *val) {
 #ifdef _WIN32
     double scannedVal = 0;
     int assigned = 0;
-    memset(buf, 128, 0);
+    memset(buf, 0, sizeof(buf));
 #endif
 
     if (rioRead(rdb,&len,1) == 0) return -1;

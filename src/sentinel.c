@@ -582,7 +582,7 @@ void sentinelEvent(int level, char *type, sentinelRedisInstance *ri,
     robj *channel, *payload;
 
     /* Handle %@ */
-    if (fmt[0] == '%' && fmt[1] == '@') {
+	if (fmt[0] == '%' && fmt[1] == '@' && ri != NULL) {
         sentinelRedisInstance *master = (ri->flags & SRI_MASTER) ?
                                          NULL : ri->master;
 
@@ -2122,9 +2122,9 @@ void sentinelRefreshInstanceInfo(sentinelRedisInstance *ri, const char *info) {
 
     /* Handle slaves replicating to a different master address. */
     if ((ri->flags & SRI_SLAVE) &&
-        role == SRI_SLAVE &&
+		role == SRI_SLAVE &&
         (ri->slave_master_port != ri->master->addr->port ||
-         strcasecmp(ri->slave_master_host,ri->master->addr->ip)))
+		(ri->slave_master_host && strcasecmp(ri->slave_master_host, ri->master->addr->ip))))
     {
         mstime_t wait_time = ri->master->failover_timeout;
 
