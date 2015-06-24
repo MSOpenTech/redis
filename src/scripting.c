@@ -90,7 +90,7 @@ char *redisProtocolToLuaType(lua_State *lua, char* reply) {
 
 char *redisProtocolToLuaType_Int(lua_State *lua, char *reply) {
     char *p = strchr(reply+1,'\r');
-    long long value;
+    PORT_LONGLONG value;
 
     string2ll(reply+1,p-reply-1,&value);
     lua_pushnumber(lua,(lua_Number)value);
@@ -99,7 +99,7 @@ char *redisProtocolToLuaType_Int(lua_State *lua, char *reply) {
 
 char *redisProtocolToLuaType_Bulk(lua_State *lua, char *reply) {
     char *p = strchr(reply+1,'\r');
-    long long bulklen;
+    PORT_LONGLONG bulklen;
 
     string2ll(reply+1,p-reply-1,&bulklen);
     if (bulklen == -1) {
@@ -133,7 +133,7 @@ char *redisProtocolToLuaType_Error(lua_State *lua, char *reply) {
 
 char *redisProtocolToLuaType_MultiBulk(lua_State *lua, char *reply) {
     char *p = strchr(reply+1,'\r');
-    long long mbulklen;
+    PORT_LONGLONG mbulklen;
     int j = 0;
 
     string2ll(reply+1,p-reply-1,&mbulklen);
@@ -523,7 +523,7 @@ int luaLogCommand(lua_State *lua) {
 }
 
 void luaMaskCountHook(lua_State *lua, lua_Debug *ar) {
-    long long elapsed;
+    PORT_LONGLONG elapsed;
     REDIS_NOTUSED(ar);
     REDIS_NOTUSED(lua);
 
@@ -593,11 +593,12 @@ void scriptingEnableGlobalsProtection(lua_State *lua) {
 
     /* strict.lua from: http://metalua.luaforge.net/src/lib/strict.lua.html.
      * Modified to be adapted to Redis. */
+    s[j++]="local dbg=debug\n";
     s[j++]="local mt = {}\n";
     s[j++]="setmetatable(_G, mt)\n";
     s[j++]="mt.__newindex = function (t, n, v)\n";
-    s[j++]="  if debug.getinfo(2) then\n";
-    s[j++]="    local w = debug.getinfo(2, \"S\").what\n";
+    s[j++]="  if dbg.getinfo(2) then\n";
+    s[j++]="    local w = dbg.getinfo(2, \"S\").what\n";
     s[j++]="    if w ~= \"main\" and w ~= \"C\" then\n";
     s[j++]="      error(\"Script attempted to create global variable '\"..tostring(n)..\"'\", 2)\n";
     s[j++]="    end\n";
@@ -605,11 +606,12 @@ void scriptingEnableGlobalsProtection(lua_State *lua) {
     s[j++]="  rawset(t, n, v)\n";
     s[j++]="end\n";
     s[j++]="mt.__index = function (t, n)\n";
-    s[j++]="  if debug.getinfo(2) and debug.getinfo(2, \"S\").what ~= \"C\" then\n";
+    s[j++]="  if dbg.getinfo(2) and dbg.getinfo(2, \"S\").what ~= \"C\" then\n";
     s[j++]="    error(\"Script attempted to access unexisting global variable '\"..tostring(n)..\"'\", 2)\n";
     s[j++]="  end\n";
     s[j++]="  return rawget(t, n)\n";
     s[j++]="end\n";
+    s[j++]="debug = nil\n";
     s[j++]=NULL;
 
     for (j = 0; s[j] != NULL; j++) code = sdscatlen(code,s[j],strlen(s[j]));
@@ -713,10 +715,11 @@ void scriptingInit(void) {
      * information about the caller, that's what makes sense from the point
      * of view of the user debugging a script. */
     {
-        char *errh_func =       "function __redis__err__handler(err)\n"
-                                "  local i = debug.getinfo(2,'nSl')\n"
+        char *errh_func =       "local dbg = debug\n"
+                                "function __redis__err__handler(err)\n"
+                                "  local i = dbg.getinfo(2,'nSl')\n"
                                 "  if i and i.what == 'C' then\n"
-                                "    i = debug.getinfo(3,'nSl')\n"
+                                "    i = dbg.getinfo(3,'nSl')\n"
                                 "  end\n"
                                 "  if i then\n"
                                 "    return i.source .. ':' .. i.currentline .. ': ' .. err\n"
@@ -791,7 +794,7 @@ void luaReplyToRedisReply(redisClient *c, lua_State *lua) {
         addReply(c,lua_toboolean(lua,-1) ? shared.cone : shared.nullbulk);
         break;
     case LUA_TNUMBER:
-        addReplyLongLong(c,(long long)lua_tonumber(lua,-1));
+        addReplyLongLong(c,(PORT_LONGLONG)lua_tonumber(lua,-1));
         break;
     case LUA_TTABLE:
         /* We need to check if it is an array, an error, or a status reply.
@@ -905,7 +908,7 @@ int luaCreateFunction(redisClient *c, lua_State *lua, char *funcname, robj *body
 void evalGenericCommand(redisClient *c, int evalsha) {
     lua_State *lua = server.lua;
     char funcname[43];
-    long long numkeys;
+    PORT_LONGLONG numkeys;
     int delhook = 0, err;
 
     /* We want the same PRNG sequence at every call so that our PRNG is
@@ -1025,7 +1028,7 @@ void evalGenericCommand(redisClient *c, int evalsha) {
      * for every command uses too much CPU. */
     #define LUA_GC_CYCLE_PERIOD 50
     {
-        static long gc_count = 0;
+        static PORT_LONG gc_count = 0;
 
         gc_count++;
         if (gc_count == LUA_GC_CYCLE_PERIOD) {

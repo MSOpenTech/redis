@@ -21,7 +21,6 @@
  */
 
 #include "win32_types.h"
-
 #include "Win32_FDAPI.h"
 
 #include <Windows.h>
@@ -42,7 +41,9 @@
 #include "Win32_SmartHandle.h"
 #include "Win32_Service.h"
 #include "Win32_CommandLine.h"
-#include "..\redisLog.h"
+#include "Win32_RedisLog.h"
+#include "Win32_StackTrace.h"
+#include "Win32_ThreadControl.h"
 
 #include <vector>
 #include <map>
@@ -52,13 +53,14 @@
 #include <exception>
 #include <algorithm>
 #include <memory>
+
 using namespace std;
 
 #ifndef PAGE_REVERT_TO_FILE_MAP
 #define PAGE_REVERT_TO_FILE_MAP 0x80000000  // From Win8.1 SDK
 #endif
 
-const long long cSentinelHeapSize = 30 * 1024 * 1024;
+const int64_t cSentinelHeapSize = 30 * 1024 * 1024;
 extern "C" int checkForSentinelMode(int argc, char **argv);
 extern "C" void InitTimeFunctions();
 
@@ -71,7 +73,7 @@ extern "C"
   size_t(*g_msize)(void*) = nullptr;
   
   // forward def from util.h. 
-  long long memtoll(const char *p, int *err);
+  PORT_LONGLONG memtoll(const char *p, int *err);
 }
 
 //#define DEBUG_WITH_PROCMON
@@ -1117,7 +1119,7 @@ void RejoinCOWPages(HANDLE mmHandle, byte* mmStart, size_t mmSize) {
             throw std::system_error(
                 GetLastError(),
                 system_category(),
-                "RejoinCOWPages: MapViewOfFileEx failed. Please upgrade your OS to Win8 or newer.");
+                "RejoinCOWPages: MapViewOfFileEx failed.");
         }
     }
 }
@@ -1319,6 +1321,8 @@ extern "C"
             InitTimeFunctions();
             ParseCommandLineArguments(argc, argv);
             SetupLogging();
+            StackTraceInit();
+            InitThreadControl();
         } catch (system_error syserr) {
             exit(-1);
         } catch (runtime_error runerr) {
