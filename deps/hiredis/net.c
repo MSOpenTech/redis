@@ -215,7 +215,7 @@ static int redisContextWaitReady(redisContext *c, const struct timeval *timeout)
 
     msec          = -1;
     wfd[0].fd     = c->fd;
-    wfd[0].events = POLLOUT;
+    wfd[0].events = POLLOUT | POLLERR;
 
     /* Only use timeout when not NULL. */
     if (timeout != NULL) {

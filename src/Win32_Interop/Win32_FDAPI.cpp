@@ -37,6 +37,11 @@ using namespace std;
 
 #define CATCH_AND_REPORT()  catch(const std::exception &){::redisLog(REDIS_WARNING, "FDAPI: std exception");}catch(...){::redisLog(REDIS_WARNING, "FDAPI: other exception");}
 
+// Define for pre-Win8 Windows SDKs
+#ifndef _WIN32_WINNT_WIN8
+    #define _WIN32_WINNT_WIN8                   0x0602
+#endif
+
 extern "C" {
 // FD lookup Winsock equivalents for Win32_wsiocp.c
 redis_WSASetLastError WSASetLastError = NULL;
@@ -189,11 +194,7 @@ bool IsWindowsVersionAtLeast(WORD wMajorVersion, WORD wMinorVersion, WORD wServi
 	return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
 }
 
-void EnableFastLoopback(SOCKET s) {
-#ifndef _WIN32_WINNT_WIN8
-    #define _WIN32_WINNT_WIN8                   0x0602
-#endif
-    
+void EnableFastLoopback(SOCKET s) {    
     // if Win8+, use fast path option on loopback 
 	if (IsWindowsVersionAtLeast(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0)) {
 #ifndef SIO_LOOPBACK_FAST_PATH
@@ -459,20 +460,21 @@ int redis_FD_ISSET_impl(int fd, fd_set* pSet) {
 
 int redis_poll_impl(struct pollfd *fds, nfds_t nfds, int timeout) {
     try {
-        struct pollfd* pollCopy = new struct pollfd[nfds];
-        if (pollCopy == NULL) {
-            errno = ENOMEM;
-            return -1;
-        }
+        // if Win8+, use poll, else use select
+        if (IsWindowsVersionAtLeast(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0)) {
+            struct pollfd* pollCopy = new struct pollfd[nfds];
+            if (pollCopy == NULL) {
+                errno = ENOMEM;
+                return -1;
+            }
 
-        // NOTE: Treating the fds.fd as a Redis file descriptor and converting to a SOCKET for WSAPoll. 
-        for (nfds_t n = 0; n < nfds; n ++) {
-            pollCopy[n].fd = RFDMap::getInstance().lookupSocket((RFD)(fds[n].fd));
-            pollCopy[n].events = fds[n].events;
-            pollCopy[n].revents = fds[n].revents;
-        }
+            // NOTE: Treating the fds.fd as a Redis file descriptor and converting to a SOCKET for WSAPoll. 
+            for (nfds_t n = 0; n < nfds; n ++) {
+                pollCopy[n].fd = RFDMap::getInstance().lookupSocket((RFD)(fds[n].fd));
+                pollCopy[n].events = fds[n].events;
+                pollCopy[n].revents = fds[n].revents;
+            }
 
-        if (IsWindowsVersionAtLeast(HIBYTE(_WIN32_WINNT_WIN6), LOBYTE(_WIN32_WINNT_WIN6), 0)) {
             static auto f_WSAPoll = dllfunctor_stdcall<int, WSAPOLLFD*, ULONG, INT>("ws2_32.dll", "WSAPoll");
 
             // See the community addition comments at http://msdn.microsoft.com/en-us/library/windows/desktop/ms741669%28v=vs.85%29.aspx for this API. 
@@ -489,7 +491,6 @@ int redis_poll_impl(struct pollfd *fds, nfds_t nfds, int timeout) {
 
             return ret;
         } else {
-            int ret;
             fd_set readSet;
             fd_set writeSet;
             fd_set excepSet;
@@ -500,6 +501,7 @@ int redis_poll_impl(struct pollfd *fds, nfds_t nfds, int timeout) {
 
             if (nfds >= FD_SETSIZE) {
                 errno = EINVAL;
+
                 return -1;
             }
 
@@ -508,15 +510,13 @@ int redis_poll_impl(struct pollfd *fds, nfds_t nfds, int timeout) {
                 if (fds[i].fd < 0) {
                     continue;
                 }
-                if (pollCopy[i].fd >= FD_SETSIZE) {
-                    errno = EINVAL;
-                    return -1;
-                }
 
-                if (pollCopy[i].events & POLLIN) FD_SET(pollCopy[i].fd, &readSet);
-                if (pollCopy[i].events & POLLOUT) FD_SET(pollCopy[i].fd, &writeSet);
-                if (pollCopy[i].events & POLLERR) FD_SET(pollCopy[i].fd, &excepSet);
+                if (fds[i].events & POLLIN) FD_SET(fds[i].fd, &readSet);
+                if (fds[i].events & POLLOUT) FD_SET(fds[i].fd, &writeSet);
+                if (fds[i].events & POLLERR) FD_SET(fds[i].fd, &excepSet);
             }
+
+            int ret;
 
             if (timeout < 0) {
                 ret = select(0, &readSet, &writeSet, &excepSet, NULL);
@@ -528,19 +528,17 @@ int redis_poll_impl(struct pollfd *fds, nfds_t nfds, int timeout) {
             }
 
             if (ret < 0) {
+
                 return ret;
             }
 
             for (i = 0; i < nfds; i++) {
                 fds[i].revents = 0;
 
-                if (FD_ISSET(pollCopy[i].fd, &readSet)) fds[i].revents |= POLLIN;
-                if (FD_ISSET(pollCopy[i].fd, &writeSet)) fds[i].revents |= POLLOUT;
-                if (FD_ISSET(pollCopy[i].fd, &excepSet)) fds[i].revents |= POLLERR;
+                if (FD_ISSET(fds[i].fd, &readSet)) fds[i].revents |= POLLIN;
+                if (FD_ISSET(fds[i].fd, &writeSet)) fds[i].revents |= POLLOUT;
+                if (FD_ISSET(fds[i].fd, &excepSet)) fds[i].revents |= POLLERR;
             }
-
-            delete pollCopy;
-            pollCopy = NULL;
 
             return ret;
         }
