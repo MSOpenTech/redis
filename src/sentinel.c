@@ -766,7 +766,10 @@ void sentinelRunPendingScripts(void) {
                 pos += 1;
                 j++;
             }
-            if(TRUE == CreateProcessA(sj->argv[0], args, NULL, NULL, FALSE, 0, NULL, NULL, NULL, &pi)) {
+						STARTUPINFO si;
+						ZeroMemory(&si, sizeof(si));
+						si.cb = sizeof(si);
+            if(TRUE == CreateProcessA(sj->argv[0], args, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
                 sj->hScriptProcess = pi.hProcess;
                 sj->pid = pi.dwProcessId;
                 CloseHandle( pi.hThread );
