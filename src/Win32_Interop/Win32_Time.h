@@ -25,9 +25,12 @@
 #ifndef WIN32_INTEROP_TIME_H
 #define WIN32_INTEROP_TIME_H
 
+#if (_MSC_VER > 1800)
+#include <corecrt.h>
+#endif
 #include <stdint.h>
-
 #define gettimeofday gettimeofday_highres
+
 
 void     InitTimeFunctions();
 uint64_t GetHighResRelativeTime(double scale);
