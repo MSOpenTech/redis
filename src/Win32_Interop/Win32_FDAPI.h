@@ -37,6 +37,7 @@ typedef unsigned long nfds_t;
 #include <WinSock2.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/stat.h>
 
 // Including a version of this file modified to eliminate prototype
 // definitions not removed by INCL_WINSOCK_API_PROTOTYPES
@@ -225,14 +226,10 @@ extern int FDAPI_fileno(FILE *file);
 #define fclose(File)                FDAPI_fclose(File)
 #define setmode(fd,mode)            FDAPI_setmode(fd,mode)
 #define fwrite(Str,Size,Count,File) FDAPI_fwrite(Str,Size,Count,File)
-#if (_MSC_VER <= 1800)
-	#define fileno(File)            FDAPI_fileno(File)
-	#define _INC_STAT_INL
-	#define fstat(fd,buffer)        fdapi_fstat64(fd,buffer)
-#else
-	#define fileno(File)            _fileno(File)
-#endif
+#define fileno(File)                FDAPI_fileno(File)
 
+#define _INC_STAT_INL
+#define fstat(fd,buffer)            fdapi_fstat64(fd,buffer)
 #endif
 
 #ifdef __cplusplus
