@@ -56,7 +56,7 @@ public:
             throw std::runtime_error("invalid handle passed to constructor");
     }
 
-    HANDLE Assign(HANDLE h, string errorToReport)
+    HANDLE Assign(HANDLE h, const string& errorToReport)
     {
         Close();
         m_handle = h;
@@ -65,7 +65,7 @@ public:
         return h;
     }
 
-    SmartHandle(HANDLE handle, string errorToReport)
+    SmartHandle(HANDLE handle, const string& errorToReport)
     {
         Close();
         m_handle = handle;
@@ -254,7 +254,7 @@ public:
         m_handle = INVALID_HANDLE_VALUE;
     }
 
-    HANDLE Assign(HANDLE mmFile, DWORD protectionFlags, DWORD maxSizeHigh, DWORD maxSizeLow, string errorToReport)
+    HANDLE Assign(HANDLE mmFile, DWORD protectionFlags, DWORD maxSizeHigh, DWORD maxSizeLow, const string& errorToReport)
     {
         Unmap();
         m_handle = CreateFileMapping(mmFile, NULL, protectionFlags, maxSizeHigh, maxSizeLow, NULL);
@@ -269,7 +269,7 @@ public:
         return m_handle;
     }
 
-    SmartFileMapHandle(HANDLE mmFile, DWORD protectionFlags, DWORD maxSizeHigh, DWORD maxSizeLow, string errorToReport)
+    SmartFileMapHandle(HANDLE mmFile, DWORD protectionFlags, DWORD maxSizeHigh, DWORD maxSizeLow, const string& errorToReport)
     {
         m_handle = CreateFileMapping(mmFile, NULL, protectionFlags, maxSizeHigh, maxSizeLow, NULL);
         if (Invalid()) {

@@ -36,7 +36,7 @@ private:
 	void operator=(DLLMap const&); // Don't implement to guarantee singleton semantics
 
 public:
-	LPVOID getProcAddress(string dll, string functionName);
+	LPVOID getProcAddress(const string& dll, const string& functionName);
 	virtual ~DLLMap();
 };
 
@@ -44,7 +44,7 @@ public:
 template <typename R, typename... T>
 class dllfunctor_stdcall {
 public:
-	dllfunctor_stdcall(string dll, string function)
+	dllfunctor_stdcall(const string& dll, const string& function)
 	{
 		_f = (R(__stdcall *)(T...))DLLMap::getInstance().getProcAddress(dll, function.c_str());
 	}

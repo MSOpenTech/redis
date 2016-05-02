@@ -46,7 +46,7 @@ using namespace std;
 ArgumentMap g_argMap;
 vector<string> g_pathsAccessed;
 
-string stripQuotes(string s) {
+string stripQuotes(const string& s) {
     if (s.length() >= 2) {
         if (s.at(0) == '\'' &&  s.at(s.length() - 1) == '\'') {
             if (s.length() > 2) {
@@ -199,7 +199,7 @@ public:
     dllfunctor_stdcall<int, LPCSTR, INT, LPWSAPROTOCOL_INFO, LPSOCKADDR, LPINT> f_WSAStringToAddressA =
         dllfunctor_stdcall<int, LPCSTR, INT, LPWSAPROTOCOL_INFO, LPSOCKADDR, LPINT>("ws2_32.dll", "WSAStringToAddressA");
 
-    bool IsIPAddress(string address) {
+    bool IsIPAddress(const string& address) {
         SOCKADDR_IN sockaddr4;
         sockaddr4.sin_family = AF_INET;
         SOCKADDR_IN6 sockaddr6;
@@ -310,7 +310,7 @@ public:
         vector<string> params;
         params.push_back(argv[argStartIndex + 1]);
         vector<string> subParams = subCommands[argv[argStartIndex + 1]]->Extract(argStartIndex + 1, argc, argv);
-        for (string p : params) {
+		for (string p : subParams) {
             transform(p.begin(), p.end(), p.begin(), ::tolower);
             p = stripQuotes(p);
             params.push_back(p);
@@ -457,7 +457,7 @@ std::vector<std::string> split(const std::string &s, char delim) {
     return elems;
 }
 
-vector<string> Tokenize(string line)  {
+vector<string> Tokenize(const string& line)  {
     vector<string> tokens;
     stringstream token;
 
@@ -467,7 +467,7 @@ vector<string> Tokenize(string line)  {
         return tokens;
     }
 
-    for (string::const_iterator sit = line.begin(); sit != line.end(); sit++) {
+    for (string::const_iterator sit = line.begin(); sit != line.end(); ++sit) {
         char c = *(sit);
         if (isspace(c) && token.str().length() > 0) {
             tokens.push_back(token.str());
@@ -508,10 +508,9 @@ vector<string> Tokenize(string line)  {
     return tokens;
 }
 
-void ParseConfFile(string confFile, string cwd, ArgumentMap& argMap) {
+void ParseConfFile(const string& confFile, const string& cwd, ArgumentMap& argMap) {
     ifstream config;
     string line;
-    string value;
 
     char fullConfFilePath[MAX_PATH];
     if (PathIsRelativeA(confFile.c_str())) {

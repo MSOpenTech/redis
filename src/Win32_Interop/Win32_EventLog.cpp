@@ -68,7 +68,7 @@ void RedisEventLog::UninstallEventLogSource() {
 }
 
 // sets up the registry keys required for the EventViewer message filter
-void RedisEventLog::InstallEventLogSource(string appPath) {
+void RedisEventLog::InstallEventLogSource(const string& appPath) {
     SmartRegistryHandle eventLogKey;
     if (ERROR_SUCCESS != RegOpenKeyA(HKEY_LOCAL_MACHINE, cEventLogPath.c_str(), eventLogKey)) {
         throw std::system_error(GetLastError(), system_category(), "RegOpenKey failed");
@@ -156,7 +156,7 @@ void RedisEventLog::LogMessage(LPCSTR msg, const WORD type) {
     }
 }
 
-void RedisEventLog::LogError(string msg) {
+void RedisEventLog::LogError(const string& msg) {
     try {
         if (eventLogEnabled == true) {
             stringstream ss;

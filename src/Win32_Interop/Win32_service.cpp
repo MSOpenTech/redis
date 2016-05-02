@@ -115,7 +115,7 @@ private:
     }
 
 public:
-    void Write(string message) {
+    void Write(const string& message) {
         if (pipe != INVALID_HANDLE_VALUE) {
             DWORD bytesWritten = 0;
             WriteFile(pipe, message.c_str(), (DWORD)message.length(), &bytesWritten, NULL);
@@ -345,7 +345,7 @@ VOID ServiceInstall(int argc, char ** argv) {
         SetAccessACLOnFolder(userName, folder);
         aceMessage << "\"" << folder.c_str() << "\" ";
     }
-    ServicePipeWriter::getInstance().Write(aceMessage.str().c_str());
+    ServicePipeWriter::getInstance().Write(aceMessage.str());
 
     ServicePipeWriter::getInstance().Write("Redis successfully installed as a service.");
 }

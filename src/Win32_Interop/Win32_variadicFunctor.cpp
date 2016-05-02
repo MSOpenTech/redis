@@ -36,7 +36,7 @@ DLLMap& DLLMap::getInstance() {
 
 DLLMap::DLLMap() { };
 
-LPVOID DLLMap::getProcAddress(string dll, string functionName)
+LPVOID DLLMap::getProcAddress(const string& dll, const string& functionName)
 {
 	if (find(dll) == end()) {
 		HMODULE mod = LoadLibraryA(dll.c_str());

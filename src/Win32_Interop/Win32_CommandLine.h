@@ -36,7 +36,7 @@ using namespace std;
 typedef map<string, vector<vector<string>>> ArgumentMap;
 extern ArgumentMap g_argMap;
 
-void ParseConfFile(string confFile, string cwd, ArgumentMap& argMap);
+void ParseConfFile(const string& confFile, const string& cwd, ArgumentMap& argMap);
 void ParseCommandLineArguments(int argc, char** argv);
 vector<string> GetAccessPaths();
 

@@ -30,13 +30,13 @@ typedef class RedisEventLog {
 public:
     ~RedisEventLog() {}
 
-    void InstallEventLogSource(string appPath);
+    void InstallEventLogSource(const string& appPath);
     void UninstallEventLogSource();
 
     void SetEventLogIdentity(const char* identity);
 
     void LogMessage(LPCSTR msg, const WORD type);
-    void LogError(string msg);
+    void LogError(const string& msg);
 
     string GetEventLogIdentity();
     void EnableEventLog(bool enabled);
