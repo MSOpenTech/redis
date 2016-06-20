@@ -37,10 +37,9 @@ void EnsureMemoryIsMapped(const void *buffer, size_t size) {
     if ((size_t) (pEnd - pStart) > Globals::pageSize) {
         size_t offset = 0;
         while (offset < size) {
+            offset += Globals::pageSize;
             if (size < offset) {
                 offset = size;
-            } else {
-                offset += Globals::pageSize;
             }
             c = *((char*) (p + offset));
         }
