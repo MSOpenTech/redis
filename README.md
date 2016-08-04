@@ -18,18 +18,17 @@
 
 There are two current active branches: 2.8 and 3.0.
 
-- Redis on UNIX [2.8 release notes](https://raw.githubusercontent.com/antirez/redis/2.8/00-RELEASENOTES)
-- Redis on Windows [2.8 release notes](https://raw.githubusercontent.com/MSOpenTech/redis/2.8/Redis%20on%20Windows%20Release%20Notes.md)
-- Redis on UNIX [3.0 release notes](https://raw.githubusercontent.com/antirez/redis/3.0/00-RELEASENOTES)
-- Redis on Windows [3.0 release notes](https://raw.githubusercontent.com/MSOpenTech/redis/3.0/Redis%20on%20Windows%20Release%20Notes.md)
+- Redis on UNIX [2.8 release notes](https://github.com/antirez/redis/blob/2.8/00-RELEASENOTES)
+- Redis on Windows [2.8 release notes](https://github.com/MSOpenTech/redis/blob/2.8/Redis%20on%20Windows%20Release%20Notes.md)
+- Redis on UNIX [3.0 release notes](https://github.com/antirez/redis/blob/3.0/00-RELEASENOTES)
+- Redis on Windows [3.0 release notes](https://github.com/MSOpenTech/redis/blob/3.0/Redis%20on%20Windows%20Release%20Notes.md)
 
 ## How to configure and deploy Redis on Windows
 
 - [Memory Configuration for 2.8](https://github.com/MSOpenTech/redis/wiki/Memory-Configuration "Memory Configuration")
 - [Memory Configuration for 3.0](https://github.com/MSOpenTech/redis/wiki/Memory-Configuration-For-Redis-3.0 "Memory Configuration")
-- [Windows Service Documentation](https://raw.githubusercontent.com/MSOpenTech/redis/3.0/Windows%20Service%20Documentation.md "Windows Service Documentation")
-- [Redis on Windows](https://raw.githubusercontent.com/MSOpenTech/redis/2.8/Redis%20on%20Windows.md "Redis on Windows")
-- [Windows Service Documentation](https://raw.githubusercontent.com/MSOpenTech/redis/2.8/Windows%20Service%20Documentation.md "Windows Service Documentation")
+- [Windows Service Documentation](https://github.com/MSOpenTech/redis/blob/3.0/Windows%20Service%20Documentation.md "Windows Service Documentation")
+- [Redis on Windows](https://github.com/MSOpenTech/redis/blob/3.0/Redis%20on%20Windows.md "Redis on Windows")
 
 ## How to build Redis using Visual Studio
 
