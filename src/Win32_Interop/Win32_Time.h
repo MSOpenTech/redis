@@ -29,8 +29,8 @@
 #include <corecrt.h>
 #endif
 #include <stdint.h>
-
 #define gettimeofday gettimeofday_highres
+
 
 void     InitTimeFunctions();
 uint64_t GetHighResRelativeTime(double scale);
