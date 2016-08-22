@@ -88,7 +88,7 @@ size_t zmalloc_get_rss(void);
 size_t zmalloc_get_private_dirty(void);
 size_t zmalloc_get_smap_bytes_by_field(char *field);
 void zlibc_free(void *ptr);
-WIN32_ONLY(void zmalloc_free_used_memory_mutex(void);)
+WIN32_ONLY(void zmalloc_free_used_memory_mutex(void));
 
 #ifndef HAVE_MALLOC_SIZE
 size_t zmalloc_size(void *ptr);
