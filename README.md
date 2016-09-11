@@ -27,9 +27,9 @@ There are two current active branches: 2.8 and 3.0.
 
 - [Memory Configuration for 2.8](https://github.com/MSOpenTech/redis/wiki/Memory-Configuration "Memory Configuration")
 - [Memory Configuration for 3.0](https://github.com/MSOpenTech/redis/wiki/Memory-Configuration-For-Redis-3.0 "Memory Configuration")
-- [Windows Service Documentation](https://raw.githubusercontent.com/MSOpenTech/redis/3.0/Windows%20Service%20Documentation.md "Windows Service Documentation")
 - [Redis on Windows](https://raw.githubusercontent.com/MSOpenTech/redis/2.8/Redis%20on%20Windows.md "Redis on Windows")
-- [Windows Service Documentation](https://raw.githubusercontent.com/MSOpenTech/redis/2.8/Windows%20Service%20Documentation.md "Windows Service Documentation")
+- [Windows Service Documentation 2.8](https://raw.githubusercontent.com/MSOpenTech/redis/2.8/Windows%20Service%20Documentation.md "Windows Service Documentation")
+- [Windows Service Documentation 3.0](https://raw.githubusercontent.com/MSOpenTech/redis/3.0/Windows%20Service%20Documentation.md "Windows Service Documentation")
 
 ## How to build Redis using Visual Studio
 
