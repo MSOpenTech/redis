@@ -31,6 +31,11 @@
  */
 
 #include <stdio.h>
+
+#ifdef _WIN32
+#define __func__ __FUNCTION__
+#endif
+
 #define D(...)                                                               \
     do {                                                                     \
         FILE *fp = fopen("/tmp/log.txt","a");                                \
