@@ -990,7 +990,7 @@ int writeToClient(int fd, client *c, int handler_installed) {
         } else {
             o = listNodeValue(ln);
             objlen = (int)sdslen(o->ptr);
-            objmem = sdsZmallocSize(o->ptr);
+            objmem = getStringObjectSdsUsedMemory(o);
 
             if (objlen == 0) {
                 listDelNode(c->reply,ln);
