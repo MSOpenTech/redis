@@ -158,11 +158,14 @@ void rdbCheckSetError(const char *fmt, ...) {
 /* During RDB check we setup a special signal handler for memory violations
  * and similar conditions, so that we can log the offending part of the RDB
  * if the crash is due to broken content. */
+#ifdef _WIN32
+void rdbCheckHandleCrash(int sig) {
+#else
 void rdbCheckHandleCrash(int sig, siginfo_t *info, void *secret) {
-    UNUSED(sig);
     UNUSED(info);
     UNUSED(secret);
-
+#endif
+    UNUSED(sig);
     rdbCheckError("Server crash checking the specified RDB file!");
     exit(1);
 }
