@@ -412,6 +412,11 @@ static client createClient(char *cmd, size_t len, client from) {
         c->obuf = sdscatlen(c->obuf, buf, len);
         free(buf);
         c->prefix_pending++;
+
+        //Try sending AUTH immediately
+        int result = WSIOCP_SocketSend(c->context->fd, (char*)c->obuf,
+            (int)(sdslen(c->obuf)),
+            config.el, c, NULL, writeHandlerDone);
     }
 
     /* If a DB number different than zero is selected, prefix our request
