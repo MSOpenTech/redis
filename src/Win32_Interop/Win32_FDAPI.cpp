@@ -671,10 +671,10 @@ int FDAPI_poll(struct pollfd *fds, nfds_t nfds, int timeout) {
 
             nfds_t i;
             for (i = 0; i < nfds; i++) {
-                if (fds[i].fd == INVALID_SOCKET) {
+                if (pollCopy[i].fd == INVALID_SOCKET) {
                     continue;
                 }
-                if (pollCopy[i].fd >= FD_SETSIZE) {
+                if (fds[i].fd >= FD_SETSIZE) {
                     errno = EINVAL;
                     return -1;
                 }
@@ -1001,28 +1001,7 @@ int FDAPI_fileno(FILE *file) {
 }
 
 int FDAPI_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
-    try {
-        if (readfds != NULL) {
-            for (u_int r = 0; r < readfds->fd_count; r++) {
-                readfds->fd_array[r] = RFDMap::getInstance().lookupSocket((RFD) readfds->fd_array[r]);
-            }
-        }
-        if (writefds != NULL) {
-            for (u_int r = 0; r < writefds->fd_count; r++) {
-                writefds->fd_array[r] = RFDMap::getInstance().lookupSocket((RFD) writefds->fd_array[r]);
-            }
-        }
-        if (exceptfds != NULL) {
-            for (u_int r = 0; r < exceptfds->fd_count; r++) {
-                exceptfds->fd_array[r] = RFDMap::getInstance().lookupSocket((RFD) exceptfds->fd_array[r]);
-            }
-        }
-
-        return f_select(nfds, readfds, writefds, exceptfds, timeout);
-    } CATCH_AND_REPORT();
-
-    errno = EBADF;
-    return SOCKET_ERROR;
+    return f_select(nfds, readfds, writefds, exceptfds, timeout);
 }
 
 u_int FDAPI_ntohl(u_int netlong){

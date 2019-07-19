@@ -48,3 +48,6 @@ msvs/BuildRelease
 msvs/Documentation
 tests/tmp/
 
+*.db
+*.opendb
+api/
